@@ -1,96 +1,124 @@
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QEvent
-from PyQt5.QtGui import QIcon, QIntValidator
-from PyQt5.QtWidgets import QComboBox, QDialog, QGridLayout, \
-    QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, \
-    QSizePolicy, QTableWidget, QVBoxLayout, QGraphicsLayout, QHeaderView, QTableWidgetItem, QWidget, QButtonGroup
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QGroupBox, QPushButton, QGridLayout
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtCore import Qt
+import os
+
+from PyQt5 import QtGui
 
 
-class WidgetGallery(QDialog):
-    def __init__(self, parent=None):
-        super(WidgetGallery, self).__init__(parent)
+class App(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.title = 'Утюг'
+        self.left = 30
+        self.top = 30
+        self.width = 640
+        self.height = 480
+        self.imagenumber = 0
+        self.initUI()
 
-        self.setWindowTitle("Утюг")
-        self.setMinimumSize(800, 600)
-        self.setWindowIcon(QIcon(r'Images\presentation.png'))
-        self.setWindowFlags(self.windowFlags()
-                            | QtCore.Qt.WindowMinimizeButtonHint
-                            | QtCore.Qt.WindowMaximizeButtonHint)
+    def initUI(self):
+        self.buttons()
+        self.instructions()
+        layout = QGridLayout()
+        self.setLayout(layout)
+        self.label = QLabel(self)
 
-        self.create_top_left_group_box()
-        self.create_bottom_left_tab_widget()
-        self.Red()
-        self.Green()
+        layout.addWidget(self.label,1,1,3,3)
+        layout.addWidget(self.groupButtons,1,0,1,1)
+        layout.addWidget(self.instruct, 2, 0, 3, 1)
+        layout.setRowStretch(1, 1)
+        layout.setRowStretch(2, 1)
+        layout.setColumnStretch(0, 1)
+        layout.setColumnStretch(1, 1)
 
-        self.GreenLight.hide()
+        self.setWindowTitle(self.title)
+        self.setWindowIcon(QIcon("images\\старые\\presentation.png"))
+        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.showimage(0)
+        self.show()
 
-        main_layout = QGridLayout()
-        main_layout.addWidget(self.bottom_left_tab_widget, 1, 1, 3, 3)
-        main_layout.addWidget(self.top_left_group_box, 1, 0, 1, 1)
-        main_layout.addWidget(self.RedLight, 2, 0, 3, 1)
-        main_layout.addWidget(self.GreenLight, 2, 0, 3, 1)
-        main_layout.setRowStretch(1, 1)
-        main_layout.setRowStretch(2, 1)
-        main_layout.setColumnStretch(0, 1)
-        main_layout.setColumnStretch(1, 1)
-        self.setLayout(main_layout)
+    def buttons(self):
+        self.groupButtons = QGroupBox()
+        self.button = QPushButton()
+        self.button.setText("Включить/Выключить")
+        self.button.setFont(QtGui.QFont("SansSerif", 11))
+        self.button.setCheckable(True)
+        self.button.clicked[bool].connect(self.setStateOn)
 
-    def create_bottom_left_tab_widget(self):
-        self.bottom_left_tab_widget = QGroupBox()
-        self.label=QLabel()
-        self.label.setStyleSheet("QLabel{{border-image: url({});}}".format('./images/IronButton.jpg'))
-        graphic_h_box = QHBoxLayout()
-        graphic_h_box.addWidget(self.label)
-        self.bottom_left_tab_widget.setLayout(graphic_h_box)
+        self.button1 = QPushButton()
+        self.button1.setText("Пар")
+        self.button1.setFont(QtGui.QFont("SansSerif", 11))
+        self.button1.setCheckable(True)
+        self.button1.clicked[bool].connect(self.setStateSteam)
 
+        self.button2 = QPushButton()
+        self.button2.setText("Изменить режим")
+        self.button2.setFont(QtGui.QFont("SansSerif", 11))
+        self.button2.setCheckable(True)
+        self.button2.clicked[bool].connect(self.setStateHeat)
+        layout1 = QVBoxLayout()
+        layout1.addWidget(self.button)
+        layout1.addWidget(self.button1)
+        layout1.addWidget(self.button2)
+        layout1.addStretch(1)
+        self.groupButtons.setLayout(layout1)
 
-    def create_top_left_group_box(self):
-        self.top_left_group_box = QGroupBox()
-        self.button=QPushButton()
-        self.button.setText("Включить")
-        self.button.clicked.connect(self.Green)
+    def instructions(self):
+        self.instruct=QGroupBox()
+        self.label1=QLabel()
+        self.label1.setText("""Режим отпаривания:\nСерый - Пара нет\nЗеленый - Пар есть\n
+        Режимы нагрева:\nЖелтый - Слабый нагрев\nКрасный - Сильный нагрев""")
+        self.label1.setFont(QtGui.QFont("SansSerif", 14))
+        layout2 = QVBoxLayout()
+        layout2.addWidget(self.label1)
+        layout2.addStretch(1)
+        self.instruct.setLayout(layout2)
 
-        self.button1=QPushButton()
-        self.button1.setText("Выключить")
-        self.button1.clicked.connect(self.Red)
+    def showimage(self,img):
+        directory = "C:\\Users\\Человек\\PycharmProjects\\automatVizualization\\images"
+        imagelist = os.listdir(directory)
+        pixmap = QPixmap(directory + '\\' + imagelist[img])
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.button)
-        layout.addWidget(self.button1)
-        layout.addStretch(1)
-        self.top_left_group_box.setLayout(layout)
+        self.imagenumber = img
+        self.label.setPixmap(pixmap)
+        self.resize(pixmap.width() + 500, pixmap.height())
 
-    def Red(self):
-        self.RedLight=QGroupBox()
-        self.red = QLabel()
-        self.red.setStyleSheet("QLabel{{border-image: url({});}}".format('./images/Red.png'))
-        self.red.setFixedWidth(60)
-        self.red.setFixedHeight(60)
-        self.redLayout = QHBoxLayout()
-        self.redLayout.addWidget(self.red)
-        self.RedLight.setLayout(self.redLayout)
-        self.RedLight.show()
+    def setStateOn(self, pressed):
+        count = 0
+        if pressed:
+            count = + 1
+        if count%2 == 0:
+            self.showimage(0)
+        else:
+            self.showimage(1)
 
-    def Green(self):
-        self.GreenLight=QGroupBox()
-        self.green = QLabel()
-        self.green.setStyleSheet("QLabel{{border-image: url({});}}".format('./images/Green.png'))
-        self.green.setFixedWidth(60)
-        self.green.setFixedHeight(60)
-        self.greenLayout = QHBoxLayout()
-        self.greenLayout.addWidget(self.green)
-        self.GreenLight.setLayout(self.greenLayout)
-        self.GreenLight.show()
+    def setStateSteam(self):
+        if self.imagenumber != 0 and self.imagenumber != 3 and self.imagenumber != 4:
+            if self.imagenumber != 1:
+                self.showimage(1)
+            else:
+                self.showimage(2)
 
-    #def createAnimation(self):
-    #    self.createAnim=QGroupBox("Состояние")
-    #    if self.button.event(QtCore.QEvent.MouseButtonPress):
-    #        self.createAnim.setLayout(self.greenLayout)
-    #    elif self.button1.event(QtCore.QEvent.MouseButtonPress):
-    #        self.createAnim.setLayout(self.redLayout)
+        if self.imagenumber != 0 and self.imagenumber != 1 and self.imagenumber != 2:
+            if self.imagenumber != 3:
+                self.showimage(3)
+            else:
+                self.showimage(4)
 
+    def setStateHeat(self):
+        if self.imagenumber != 0 and self.imagenumber != 2 and self.imagenumber != 4:
+            if self.imagenumber != 1:
+                self.showimage(1)
+            else:
+                self.showimage(3)
 
-
+        if self.imagenumber != 0 and self.imagenumber != 1 and self.imagenumber != 3:
+            if self.imagenumber != 2:
+                self.showimage(2)
+            else:
+                self.showimage(4)
 
 
 
